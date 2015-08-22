@@ -28,7 +28,7 @@ libraries directory. Rename from Cosa-Domotica-master to
 Domotica.
 
 The Domotica library and examples should be found in the Arduino IDE
-File>Sketchbook menu. Open the DomoticaReceiver example sketch. Select
+File>Sketchbook menu. Open the DomoticaMonitor example sketch. Select
 the Cosa core by selecting one of the Cosa boards in the Tools>Board
 menu.
 
