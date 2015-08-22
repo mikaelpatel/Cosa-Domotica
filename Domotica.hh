@@ -105,32 +105,29 @@ namespace Domotica {
 
   /** Analog Pin Sample Message. */
   namespace AnalogPin {
-    struct msg_t {
-      header_t header;	       // Domotica message header.
+    struct msg_t : header_t {
       uint16_t value;	       // Sample value (0..1023).
     };
   };
 
   /** Digital Pin Sample Message. */
   namespace DigitalPin {
-    struct msg_t {
-      header_t header;	       // Domotica message header.
+    struct msg_t : header_t {
       bool value;	       // Sample value.
     };
   };
 
   /** Digital Pins Sample Message. */
   namespace DigitalPins {
-    struct msg_t {
-      header_t header;	       // Domotica message header.
+    static const uint8_t MAX = 32;
+    struct msg_t : header_t {
       uint32_t value;	       // Sample value.
     };
   };
 
   /** DS18B20 Sensor Message. */
   namespace DS18B20 {
-    struct msg_t {
-      header_t header;	       // Domotica message header.
+    struct msg_t : header_t {
       int16_t temperature;     // Temperature fixpoint<12:4>.
     };
   };
@@ -139,8 +136,7 @@ namespace Domotica {
    * Digital Humidity and Temperature Sensor Message.
    */
   namespace DHT {
-    struct msg_t {
-      header_t header;		// Domotica message header.
+    struct msg_t : header_t {
       int16_t humidity;		// Humidity RH% X 10.
       int16_t temperature;	// Temperature C X 10.
     };

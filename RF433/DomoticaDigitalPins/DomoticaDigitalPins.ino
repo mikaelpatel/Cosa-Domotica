@@ -69,7 +69,7 @@ void loop()
   // Sequence number
   static uint8_t nr = 0;
 
-  // Construct the message with pin number and state
+  // Construct the message with number of pins and pin state vector
   Domotica::DigitalPins::msg_t msg;
   uint32_t value = 0L;
   uint32_t mask = 1L;
@@ -79,7 +79,7 @@ void loop()
     if (InputPin::read(pin)) value |= mask;
     mask <<= 1;
   }
-  msg.header.set(nr, membersof(digital_pin_map));
+  msg.set(nr, membersof(digital_pin_map));
   msg.value = value;
 
   // Boardcast message

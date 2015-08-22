@@ -91,7 +91,7 @@ void loop()
 
   // Initiate the message with measurements
   Domotica::DS18B20::msg_t msg;
-  msg.header.set(nr, ID);
+  msg.set(nr, ID);
   msg.temperature = sensor.get_temperature();
 
   // Broadcast the message and power down after completion

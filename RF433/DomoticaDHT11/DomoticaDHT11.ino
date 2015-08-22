@@ -81,7 +81,7 @@ void loop()
 
   // Construct message with humidity and temperature
   Domotica::DHT::msg_t msg;
-  msg.header.set(nr, ID);
+  msg.set(nr, ID);
   sensor.sample(msg.humidity, msg.temperature);
 
   // Broadcast message and powerdown

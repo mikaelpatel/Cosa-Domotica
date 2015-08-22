@@ -70,11 +70,11 @@ void loop()
   static uint8_t nr = 0;
   static uint8_t ix = 0;
 
-  // Construct the message with pin number and state
+  // Construct the message with pin index and state
   Domotica::DigitalPin::msg_t msg;
   Board::DigitalPin pin;
   pin = (Board::DigitalPin) pgm_read_byte(&digital_pin_map[ix]);
-  msg.header.set(nr, ix);
+  msg.set(nr, ix);
   msg.value = InputPin::read(pin);
 
   // Next pin index

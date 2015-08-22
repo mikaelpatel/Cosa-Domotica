@@ -95,7 +95,7 @@ IOStream& operator<<(IOStream& outs, Domotica::msg_t* msg)
 
 IOStream& operator<<(IOStream& outs, Domotica::DigitalPin::msg_t* msg)
 {
-  outs << PSTR("D[") << msg->header.id << PSTR("]:");
+  outs << PSTR("D[") << msg->id << PSTR("]:");
   if (msg->value)
     outs << PSTR("on");
   else
@@ -105,21 +105,22 @@ IOStream& operator<<(IOStream& outs, Domotica::DigitalPin::msg_t* msg)
 
 IOStream& operator<<(IOStream& outs, Domotica::DigitalPins::msg_t* msg)
 {
-  outs << PSTR("D[0..") << msg->header.id - 1 << PSTR("]:");
-  outs.print(msg->value, msg->header.id, IOStream::bin);
+  uint8_t pins = msg->id & (Domotica::DigitalPins::MAX - 1);
+  outs << PSTR("D[0..") << pins - 1 << PSTR("]:");
+  outs.print(msg->value, pins, IOStream::bin);
   return (outs);
 }
 
 IOStream& operator<<(IOStream& outs, Domotica::AnalogPin::msg_t* msg)
 {
-  outs << PSTR("A[") << msg->header.id << PSTR("]:")
+  outs << PSTR("A[") << msg->id << PSTR("]:")
        << msg->value;
   return (outs);
 }
 
 IOStream& operator<<(IOStream& outs, Domotica::DS18B20::msg_t* msg)
 {
-  outs << PSTR("DS18B20[") << msg->header.id << PSTR("]:");
+  outs << PSTR("DS18B20[") << msg->id << PSTR("]:");
   int16_t temp = msg->temperature;
   if (temp < 0) {
     temp = -temp;
@@ -135,7 +136,7 @@ IOStream& operator<<(IOStream& outs, Domotica::DS18B20::msg_t* msg)
 
 IOStream& operator<<(IOStream& outs, Domotica::DHT::msg_t* msg)
 {
-  outs << PSTR("DHT[") << msg->header.id << PSTR("]:");
+  outs << PSTR("DHT[") << msg->id << PSTR("]:");
   outs << msg->humidity / 10 << '.' << msg->humidity % 10 << PSTR(" %,")
        << msg->temperature / 10 << '.' << msg->temperature % 10 << PSTR(" C");
   return (outs);

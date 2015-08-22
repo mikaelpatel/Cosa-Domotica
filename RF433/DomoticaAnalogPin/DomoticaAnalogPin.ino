@@ -74,7 +74,7 @@ void loop()
   Domotica::AnalogPin::msg_t msg;
   Board::AnalogPin pin;
   pin = (Board::AnalogPin) pgm_read_byte(&analog_pin_map[ix]);
-  msg.header.set(nr, ix);
+  msg.set(nr, ix);
   msg.value = AnalogPin::sample(pin);
 
   // Next pin index
