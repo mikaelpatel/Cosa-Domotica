@@ -11,7 +11,8 @@ Domotica supports the following message:
 * [Temperature Sensor] (./RF433/DomoticaDS18B20)
 * [Humidity and Temperture Sensor] (./RF433/DomoticaDHT11)
 * [Network Time Service] (./RF433/DomoticaClock)
-The can be used both for peer-to-peer or broadcast communication.
+
+The messages can be used both for peer-to-peer or broadcast communication.
 
 The demonstation sketches for monitoring messages are:
 * [LCD] (./RF433/DomoticaMonitor)
