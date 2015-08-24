@@ -31,7 +31,9 @@ Domotica::begin(Wireless::Driver* rf, void* config)
 {
   Watchdog::begin();
   RTC::begin();
-  return (rf->begin(config));
+  if (UNLIKELY(!rf->begin(config))) return (false);
+  rf->powerdown();
+  return (true);
 }
 
 void
@@ -80,22 +82,49 @@ Domotica::await(Board::ExternalInterruptPin pin)
   ::AnalogPin::powerup();
 }
 
-IOStream& operator<<(IOStream& outs, Domotica::header_t* header)
+void
+Domotica::print(IOStream& outs, uint8_t device, uint8_t id)
+{
+  outs.print((uint16_t) device, 2, IOStream::hex);
+  outs.print('.');
+  outs.print((uint16_t) id, 2, IOStream::hex);
+}
+
+void
+Domotica::print(IOStream& outs, uint16_t network, uint8_t device, uint8_t id)
+{
+  outs.print(network, 4, IOStream::hex);
+  outs.print('.');
+  outs.print((uint16_t) device, 2, IOStream::hex);
+  outs.print('.');
+  outs.print((uint16_t) id, 2, IOStream::hex);
+}
+
+IOStream&
+operator<<(IOStream& outs, Domotica::header_t* header)
 {
   outs << header->battery << PSTR(" mV,")
        << header->nr;
   return (outs);
 }
 
-IOStream& operator<<(IOStream& outs, Domotica::msg_t* msg)
+IOStream&
+operator<<(IOStream& outs, Domotica::msg_t* msg)
 {
   outs.print(0L, msg->payload, Domotica::PAYLOAD_MAX, IOStream::hex);
   return (outs);
 }
 
-IOStream& operator<<(IOStream& outs, Domotica::DigitalPin::msg_t* msg)
+IOStream&
+operator<<(IOStream& outs, Domotica::InfoString::msg_t* msg)
 {
-  outs << PSTR("D[") << msg->id << PSTR("]:");
+  outs << msg->info;
+  return (outs);
+}
+
+IOStream&
+operator<<(IOStream& outs, Domotica::DigitalPin::msg_t* msg)
+{
   if (msg->value)
     outs << PSTR("on");
   else
@@ -103,42 +132,47 @@ IOStream& operator<<(IOStream& outs, Domotica::DigitalPin::msg_t* msg)
   return (outs);
 }
 
-IOStream& operator<<(IOStream& outs, Domotica::DigitalPins::msg_t* msg)
+IOStream&
+operator<<(IOStream& outs, Domotica::DigitalPins::msg_t* msg)
 {
   uint8_t pins = msg->id & (Domotica::DigitalPins::MAX - 1);
-  outs << PSTR("D[0..") << pins - 1 << PSTR("]:");
   outs.print(msg->value, pins, IOStream::bin);
   return (outs);
 }
 
-IOStream& operator<<(IOStream& outs, Domotica::AnalogPin::msg_t* msg)
+IOStream&
+operator<<(IOStream& outs, Domotica::AnalogPin::msg_t* msg)
 {
-  outs << PSTR("A[") << msg->id << PSTR("]:")
-       << msg->value;
+  outs << msg->value;
   return (outs);
 }
 
-IOStream& operator<<(IOStream& outs, Domotica::DS18B20::msg_t* msg)
+IOStream&
+operator<<(IOStream& outs, Domotica::TemperatureSensor::msg_t* msg)
 {
-  outs << PSTR("DS18B20[") << msg->id << PSTR("]:");
-  int16_t temp = msg->temperature;
-  if (temp < 0) {
-    temp = -temp;
-    outs << '-';
-  }
-  uint16_t fraction = (625 * (temp & 0xf)) / 100;
-  int16_t integer = (temp >> 4);
-  outs << integer << '.';
-  if (fraction < 10) outs << '0';
-  outs << fraction << PSTR(" C");
+  uint8_t old_precision = outs.precision(2);
+  uint8_t old_width = outs.width(-5);
+  outs << msg->temperature << PSTR(" C");
+  outs.width(old_width);
+  outs.precision(old_precision);
   return (outs);
 }
 
-IOStream& operator<<(IOStream& outs, Domotica::DHT::msg_t* msg)
+IOStream&
+operator<<(IOStream& outs, Domotica::HumidityTemperatureSensor::msg_t* msg)
 {
-  outs << PSTR("DHT[") << msg->id << PSTR("]:");
-  outs << msg->humidity / 10 << '.' << msg->humidity % 10 << PSTR(" %,")
-       << msg->temperature / 10 << '.' << msg->temperature % 10 << PSTR(" C");
+  uint8_t old_precision = outs.precision(2);
+  uint8_t old_width = outs.width(-5);
+  outs << msg->humidity << PSTR(" %,")
+       << msg->temperature << PSTR(" C");
+  outs.width(old_width);
+  outs.precision(old_precision);
   return (outs);
 }
 
+IOStream&
+operator<<(IOStream& outs, Domotica::RealTimeClock::msg_t* msg)
+{
+  outs << time_t(msg->time);
+  return (outs);
+}

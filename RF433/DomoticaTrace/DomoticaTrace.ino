@@ -53,6 +53,7 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
 #include "Cosa/RTC.hh"
+#include "Cosa/Time.hh"
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
 
@@ -60,7 +61,9 @@ void setup()
 {
   Domotica::begin(&rf);
   uart.begin(9600);
-  trace.begin(&uart, PSTR("DomoticaReceiver: started"));
+  trace.begin(&uart, PSTR("DomoticaTrace: started"));
+  time_t::epoch_year(2015);
+  rf.powerup();
 }
 
 void loop()
@@ -77,11 +80,16 @@ void loop()
 	<< PSTR(",port=") << hex << port
 	<< PSTR(",dest=")
 	<< hex << (rf.is_broadcast() ? 0 : rf.get_device_address())
-	<< PSTR(",len=") << res - sizeof(msg.header)
-	<< PSTR(",nr=") << msg.header.nr
-	<< PSTR(",vcc=") << msg.header.battery
+	<< PSTR(",id=") << msg.id
+	<< PSTR(",nr=") << msg.nr
+	<< PSTR(",vcc=") << msg.battery
+	<< PSTR(",len=") << res
 	<< PSTR(":");
+
   switch (port) {
+  case Domotica::INFO_STRING_MSG:
+    trace << (Domotica::InfoString::msg_t*) &msg;
+    break;
   case Domotica::DIGITAL_PIN_MSG:
     trace << (Domotica::DigitalPin::msg_t*) &msg;
     break;
@@ -91,15 +99,18 @@ void loop()
   case Domotica::ANALOG_PIN_MSG:
     trace << (Domotica::AnalogPin::msg_t*) &msg;
     break;
-  case Domotica::DS18B20_SENSOR_MSG:
-    trace << (Domotica::DS18B20::msg_t*) &msg;
+  case Domotica::TEMPERATURE_SENSOR_MSG:
+    trace << (Domotica::TemperatureSensor::msg_t*) &msg;
     break;
-  case Domotica::DHT_SENSOR_MSG:
-    trace << (Domotica::DHT::msg_t*) &msg;
+  case Domotica::HUMIDITY_TEMPERATURE_SENSOR_MSG:
+    trace << (Domotica::HumidityTemperatureSensor::msg_t*) &msg;
+    break;
+  case Domotica::REALTIME_CLOCK_MSG:
+    trace << (Domotica::RealTimeClock::msg_t*) &msg;
     break;
   default:
     ;
   }
   trace << endl;
-  trace.print(0L, &msg, res, IOStream::hex);
+  trace.print((uint32_t) &msg, &msg, res, IOStream::hex);
 }

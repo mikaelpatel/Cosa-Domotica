@@ -42,7 +42,7 @@
 #include <Domotica/RF433.h>
 
 // Default device address
-#define DEVICE 0x01
+#define DEVICE 0x02
 
 // RF433 includes; Virtual Wire Wireless Interface and Huffman(7,4) codec
 #include <VWI.h>
@@ -52,7 +52,8 @@ HammingCodec_7_4 codec;
 VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
-#include "Cosa/Trace.hh"
+#include "Cosa/Time.hh"
+#include "Cosa/IOStream.hh"
 
 // Select port type to use with the LCD device driver.
 // LCD and communication port
@@ -66,13 +67,13 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // PCF8574 I2C expander io port based adapters
 #include <PCF8574.h>
-#include <MJKDZ_LCD_Module.h>
+// #include <MJKDZ_LCD_Module.h>
 // MJKDZ_LCD_Module port;
-MJKDZ_LCD_Module port(0);
+// MJKDZ_LCD_Module port(0);
 // #include <GY_IICLCD.h>
 // GY_IICLCD port;
-// #include <DFRobot_IIC_LCD_Module.h>
-// DFRobot_IIC_LCD_Module port;
+#include <DFRobot_IIC_LCD_Module.h>
+DFRobot_IIC_LCD_Module port;
 // #include <SainSmart_LCD2004.h>
 // SainSmart_LCD2004 port;
 
@@ -82,14 +83,17 @@ MJKDZ_LCD_Module port(0);
 // Adafruit_I2C_LCD_Backpack port;
 
 // HD44780 lcd(&port, 20, 4);
-HD44780 lcd(&port, 16, 4);
+// HD44780 lcd(&port, 16, 4);
+HD44780 lcd(&port);
+IOStream cout(&lcd);
 
 void setup()
 {
   Domotica::begin(&rf);
+  time_t::epoch_year(2015);
   lcd.begin();
-  lcd.display_clear();
-  trace.begin(&lcd, PSTR("DomoticaMonitor: started"));
+  cout << PSTR("DomoticaMonitor: started");
+  rf.powerup();
 }
 
 void loop()
@@ -98,26 +102,41 @@ void loop()
   Domotica::msg_t msg;
   uint8_t src;
   uint8_t port;
+
   while (rf.recv(src, port, &msg, sizeof(msg), TIMEOUT) < 0);
-  trace << clear << hex << src << ':';
+
+  cout << clear;
+  if (msg.battery < 3500) cout << '*';
+  Domotica::print(cout, src, msg.id);
+  cout << ':';
+
   switch (port) {
+  case Domotica::INFO_STRING_MSG:
+    cout << (Domotica::InfoString::msg_t*) &msg;
+    break;
   case Domotica::DIGITAL_PIN_MSG:
-    trace << (Domotica::DigitalPin::msg_t*) &msg;
+    cout << (Domotica::DigitalPin::msg_t*) &msg;
     break;
   case Domotica::DIGITAL_PINS_MSG:
-    trace << (Domotica::DigitalPins::msg_t*) &msg;
+    cout << (Domotica::DigitalPins::msg_t*) &msg;
     break;
   case Domotica::ANALOG_PIN_MSG:
-    trace << (Domotica::AnalogPin::msg_t*) &msg;
+    cout << (Domotica::AnalogPin::msg_t*) &msg;
     break;
-  case Domotica::DS18B20_SENSOR_MSG:
-    trace << (Domotica::DS18B20::msg_t*) &msg;
+  case Domotica::TEMPERATURE_SENSOR_MSG:
+    cout << (Domotica::TemperatureSensor::msg_t*) &msg;
     break;
-  case Domotica::DHT_SENSOR_MSG:
-    trace << (Domotica::DHT::msg_t*) &msg;
+  case Domotica::HUMIDITY_TEMPERATURE_SENSOR_MSG:
+    cout << (Domotica::HumidityTemperatureSensor::msg_t*) &msg;
+    break;
+  case Domotica::REALTIME_CLOCK_MSG:
+    cout << (Domotica::RealTimeClock::msg_t*) &msg;
     break;
   default:
     ;
   }
-  trace << PSTR(",") << &msg.header;
+
+  if (lcd.HEIGHT == 4) {
+    cout << PSTR(",") << (Domotica::header_t*) &msg;
+  }
 }

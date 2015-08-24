@@ -22,12 +22,16 @@
 #define COSA_DOMOTICA_HH
 
 #include "Cosa/Types.h"
+#include "Cosa/Time.hh"
 #include "Cosa/IOStream.hh"
 #include "Cosa/Wireless.hh"
 #include "Cosa/AnalogPin.hh"
 
 /**
- * Default Domotica network identity.
+ * Default Domotica network identity. The full node address is
+ * [NETWORK].[DEVICE]. A sensor address is [NETWORK].[DEVICE].[ID].
+ * Typically the NETWORK is fixed. User interfaces will need to map
+ * [DEVICE].[ID] to a human readable form.
  */
 #ifndef NETWORK
 #define NETWORK 0xD1CA
@@ -58,14 +62,31 @@ namespace Domotica {
   void await(Board::ExternalInterruptPin pin = Board::EXT0);
 
   /**
+   * Print local address of sensor; DEVICE.ID.
+   * @param[in] outs output stream.
+   * @param[in] device address.
+   * @param[in] id identity.
+   */
+  void print(IOStream& outs, uint8_t device, uint8_t id);
+
+  /**
+   * Print full address of sensor; NETWORK.DEVICE.ID.
+   * @param[in] outs output stream.
+   * @param[in] network address.
+   * @param[in] device address.
+   * @param[in] id identity.
+   */
+  void print(IOStream& outs, uint16_t network, uint8_t device, uint8_t id);
+
+  /**
    * Domotic device message header.
    */
   struct header_t {
     /**
-     * Set device identity, sequence number and sample battery
+     * Set local source identity, sequence number and sample battery
      * level.
      * @param[in] nr message sequence number.
-     * @param[in] id device identity.
+     * @param[in] id source identity.
      */
     void set(uint8_t &nr, uint8_t id)
     {
@@ -74,81 +95,158 @@ namespace Domotica {
       this->battery = AnalogPin::bandgap();
     }
 
-    /** Device identity. */
+    /** Local sensor/device identity. */
     uint8_t id;
 
     /** Message sequence number. */
     uint8_t nr;
 
-    /** Domotica device battery level (mV). */
+    /** Battery level (mV). */
     uint16_t battery;
   };
 
   /** Message types. */
   enum {
-    RAW_PAYLOAD_MSG = 0,
+    INFO_STRING_MSG = 0,
     DIGITAL_PIN_MSG = 1,
     DIGITAL_PINS_MSG = 2,
     ANALOG_PIN_MSG = 3,
-    DS18B20_SENSOR_MSG = 4,
-    DHT_SENSOR_MSG = 5
+    TEMPERATURE_SENSOR_MSG = 4,
+    HUMIDITY_TEMPERATURE_SENSOR_MSG = 5,
+    REALTIME_CLOCK_MSG = 6
   };
 
-  /** Message payload size. */
-  static const size_t PAYLOAD_MAX = 32 - sizeof(header_t);
+  /** Message payload size (26 bytes). */
+  static const size_t PAYLOAD_MAX = 30 - sizeof(header_t);
 
-  /** Message data type. */
-  struct msg_t {
-    header_t header;
+  /** Payload Message (26 bytes max). */
+  struct msg_t : header_t {
     uint8_t payload[PAYLOAD_MAX];
   };
 
-  /** Analog Pin Sample Message. */
+  /** Information String Message (26 bytes max). */
+  namespace InfoString {
+    static const size_t MAX = PAYLOAD_MAX;
+    struct msg_t : header_t {
+      char info[MAX];		// Null terminated string.
+    };
+  };
+
+  /** Digital Pin Sample Message (5 bytes). */
+  namespace DigitalPin {
+    struct msg_t : header_t {
+      bool value;	       // Sample value; on(1)/off(0).
+    };
+  };
+
+  /** Digital Pins Sample Message (8 bytes). */
+  namespace DigitalPins {
+    static const uint8_t MAX = 32;
+    struct msg_t : header_t {
+      uint32_t value;	       // Sample value; bit[0..ID-1]
+    };
+  };
+
+  /** Analog Pin Sample Message (6 bytes). */
   namespace AnalogPin {
     struct msg_t : header_t {
       uint16_t value;	       // Sample value (0..1023).
     };
   };
 
-  /** Digital Pin Sample Message. */
-  namespace DigitalPin {
+  /** Digital Temperature Sensor Message (8 bytes). */
+  namespace TemperatureSensor {
     struct msg_t : header_t {
-      bool value;	       // Sample value.
+      float32_t temperature;     // Temperature C.
     };
   };
 
-  /** Digital Pins Sample Message. */
-  namespace DigitalPins {
-    static const uint8_t MAX = 32;
+  /** Digital Humidity and Temperature Sensor Message (12 bytes). */
+  namespace HumidityTemperatureSensor {
     struct msg_t : header_t {
-      uint32_t value;	       // Sample value.
+      float32_t humidity;	// Humidity RH%.
+      float32_t temperature;	// Temperature C.
     };
   };
 
-  /** DS18B20 Sensor Message. */
-  namespace DS18B20 {
+  /** Real-Time Clock Message (8 bytes). */
+  namespace RealTimeClock {
     struct msg_t : header_t {
-      int16_t temperature;     // Temperature fixpoint<12:4>.
-    };
-  };
-
-  /**
-   * Digital Humidity and Temperature Sensor Message.
-   */
-  namespace DHT {
-    struct msg_t : header_t {
-      int16_t humidity;		// Humidity RH% X 10.
-      int16_t temperature;	// Temperature C X 10.
+      clock_t time;		// Seconds since epoch.
     };
   };
 };
 
+/**
+ * Print header to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] header to print.
+ * @return output stream.
+ */
 IOStream& operator<<(IOStream& outs, Domotica::header_t* header);
-IOStream& operator<<(IOStream& outs, Domotica::msg_t* msg);
-IOStream& operator<<(IOStream& outs, Domotica::DigitalPin::msg_t* msg);
-IOStream& operator<<(IOStream& outs, Domotica::DigitalPins::msg_t* msg);
-IOStream& operator<<(IOStream& outs, Domotica::AnalogPin::msg_t* msg);
-IOStream& operator<<(IOStream& outs, Domotica::DS18B20::msg_t* msg);
-IOStream& operator<<(IOStream& outs, Domotica::DHT::msg_t* msg);
 
+/**
+ * Print message payload in hex format to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::msg_t* msg);
+
+/**
+ * Print information message to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::InfoString::msg_t* msg);
+
+/**
+ * Print digital pin sample message to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::DigitalPin::msg_t* msg);
+
+/**
+ * Print digital pins sample message to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::DigitalPins::msg_t* msg);
+
+/**
+ * Print analog pin sample message to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::AnalogPin::msg_t* msg);
+
+/**
+ * Print temperature sensor sample message to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::TemperatureSensor::msg_t* msg);
+
+/**
+ * Print humidity and temperature sensor sample message to given
+ * output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::HumidityTemperatureSensor::msg_t* msg);
+
+/**
+ * Print real-time clock message to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::RealTimeClock::msg_t* msg);
 #endif

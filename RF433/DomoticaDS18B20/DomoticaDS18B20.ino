@@ -75,7 +75,10 @@ void setup()
 {
   // Startup timers and wireless device
   Domotica::begin(&rf);
-  asserted(pw) sensor.connect(ID);
+
+  // Connect to temperature sensor
+  asserted(pw)
+    sensor.connect(ID);
 }
 
 void loop()
@@ -85,18 +88,18 @@ void loop()
 
   // Make a conversion request and read the temperature (scratchpad)
   asserted(pw) {
-    DS18B20::convert_request(&owi, 12, true);
+    sensor.convert_request();
     sensor.read_scratchpad();
   }
 
   // Initiate the message with measurements
-  Domotica::DS18B20::msg_t msg;
+  Domotica::TemperatureSensor::msg_t msg;
   msg.set(nr, ID);
-  msg.temperature = sensor.get_temperature();
+  msg.temperature = sensor.get_temperature() * 0.0625;
 
   // Broadcast the message and power down after completion
   rf.powerup();
-  rf.broadcast(Domotica::DS18B20_SENSOR_MSG, &msg, sizeof(msg));
+  rf.broadcast(Domotica::TEMPERATURE_SENSOR_MSG, &msg, sizeof(msg));
   rf.powerdown();
 
   // Deep sleep with only the watchdog awake

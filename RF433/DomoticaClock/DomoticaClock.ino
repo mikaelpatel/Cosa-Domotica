@@ -1,5 +1,5 @@
 /**
- * @file DomoticaDHT11.ino
+ * @file DomoticaClock.ino
  * @version 1.0
  *
  * @section License
@@ -16,8 +16,8 @@
  * Lesser General Public License for more details.
  *
  * @section Description
- * Domotica demonstation sketch; Periodically sample DHT11 sensor
- * and send message.
+ * Domotica demonstation sketch; Broadcast real-time clock message
+ * every 10 seconds.
  *
  * @section Circuit
  * @code
@@ -28,14 +28,6 @@
  * (GND)---------------3-|GND         |                    |
  *                       |ANT       0-|--------------------+
  *                       +------------+       17.3 cm
- *
- *                        DHT11/sensor
- *                       +------------+
- * (VCC)---------------1-|VCC  ====== |
- * (EXT0)--------------2-|DATA ====== |
- *                     3-|     ====== |
- * (GND)---------------4-|GND  ====== |
- *                       +------------+
  * @endcode
  *
  * This file is part of the Arduino Che Cosa project.
@@ -45,7 +37,7 @@
 #include <Domotica/RF433.h>
 
 // Default device address
-#define DEVICE 0x50
+#define DEVICE 0x70
 #define ID 0x00
 
 // RF433 includes; Virtual Wire Wireless Interface and Huffman(7,4) codec
@@ -56,14 +48,8 @@ HammingCodec_7_4 codec;
 VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
+#include "Cosa/RTC.hh"
 #include "Cosa/OutputPin.hh"
-#include <DHT.h>
-
-// DHT pin configuration
-#define EXT Board::EXT0
-
-// Digital Humidity and Temperature Sensor Driver
-DHT11 sensor(EXT);
 
 // Flash led during transmission
 OutputPin led(Board::LED, 0);
@@ -76,25 +62,22 @@ void setup()
 
 void loop()
 {
-  // Message sequence number
+  // Sequence number
   static uint8_t nr = 0;
 
-  // Construct message with humidity and temperature
-  Domotica::HumidityTemperatureSensor::msg_t msg;
+  // Construct the message with clock
+  Domotica::RealTimeClock::msg_t msg;
+  clock_t time = RTC::seconds();
   msg.set(nr, ID);
-  int16_t humidity;
-  int16_t temperature;
-  sensor.sample(humidity, temperature);
-  msg.humidity = humidity / 10.0;
-  msg.temperature = temperature / 10.0;
+  msg.time = time;
 
-  // Broadcast message and powerdown
+  // Boardcast message
   led.on();
   rf.powerup();
-  rf.broadcast(Domotica::HUMIDITY_TEMPERATURE_SENSOR_MSG, &msg, sizeof(msg));
+  rf.broadcast(Domotica::REALTIME_CLOCK_MSG, &msg, sizeof(msg));
   rf.powerdown();
   led.off();
 
-  // Deep sleep with only watchdog awake
-  Domotica::sleep();
+  // Send every 10 seconds
+  while (RTC::seconds() - time < 10_s) yield();
 }
