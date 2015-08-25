@@ -56,6 +56,10 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 #include "Cosa/Time.hh"
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
+#include "Cosa/InputPin.hh"
+
+// Receiver snooping
+InputPin rx(RX);
 
 void setup()
 {
@@ -75,7 +79,7 @@ void loop()
   int res = rf.recv(src, port, &msg, sizeof(msg), TIMEOUT);
   if (res < 0) return;
 
-  trace << RTC::millis()
+  trace << RTC::millis() << PSTR(":") << rf.get_link_quality_indicator()
 	<< PSTR(":src=") << hex << src
 	<< PSTR(",port=") << hex << port
 	<< PSTR(",dest=")
@@ -112,5 +116,7 @@ void loop()
     ;
   }
   trace << endl;
+#if defined(VERBOSE)
   trace.print((uint32_t) &msg, &msg, res, IOStream::hex);
+#endif
 }

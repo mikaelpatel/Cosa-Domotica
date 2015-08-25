@@ -29,9 +29,9 @@
 
 /**
  * Default Domotica network identity. The full node address is
- * [NETWORK].[DEVICE]. A sensor address is [NETWORK].[DEVICE].[ID].
+ * [NETWORK].[DEVICE]. A sensor address is [NETWORK].[DEVICE].[PORT].[ID].
  * Typically the NETWORK is fixed. User interfaces will need to map
- * [DEVICE].[ID] to a human readable form.
+ * [DEVICE].[PORT].[ID] to a human readable form.
  */
 #ifndef NETWORK
 #define NETWORK 0xD1CA
@@ -65,18 +65,20 @@ namespace Domotica {
    * Print local address of sensor; DEVICE.ID.
    * @param[in] outs output stream.
    * @param[in] device address.
+   * @param[in] port sensor type.
    * @param[in] id identity.
    */
-  void print(IOStream& outs, uint8_t device, uint8_t id);
+  void print(IOStream& outs, uint8_t device, uint8_t port, uint8_t id);
 
   /**
    * Print full address of sensor; NETWORK.DEVICE.ID.
    * @param[in] outs output stream.
    * @param[in] network address.
    * @param[in] device address.
+   * @param[in] port sensor type.
    * @param[in] id identity.
    */
-  void print(IOStream& outs, uint16_t network, uint8_t device, uint8_t id);
+  void print(IOStream& outs, uint16_t network, uint8_t device, uint8_t port, uint8_t id);
 
   /**
    * Domotic device message header.
@@ -109,8 +111,8 @@ namespace Domotica {
   enum {
     INFO_STRING_MSG = 0,
     DIGITAL_PIN_MSG = 1,
-    DIGITAL_PINS_MSG = 2,
-    ANALOG_PIN_MSG = 3,
+    ANALOG_PIN_MSG = 2,
+    DIGITAL_PINS_MSG = 3,
     TEMPERATURE_SENSOR_MSG = 4,
     HUMIDITY_TEMPERATURE_SENSOR_MSG = 5,
     REALTIME_CLOCK_MSG = 6

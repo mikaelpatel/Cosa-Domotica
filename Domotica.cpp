@@ -83,19 +83,23 @@ Domotica::await(Board::ExternalInterruptPin pin)
 }
 
 void
-Domotica::print(IOStream& outs, uint8_t device, uint8_t id)
+Domotica::print(IOStream& outs, uint8_t device, uint8_t port, uint8_t id)
 {
   outs.print((uint16_t) device, 2, IOStream::hex);
+  outs.print('.');
+  outs.print((uint16_t) port, 2, IOStream::hex);
   outs.print('.');
   outs.print((uint16_t) id, 2, IOStream::hex);
 }
 
 void
-Domotica::print(IOStream& outs, uint16_t network, uint8_t device, uint8_t id)
+Domotica::print(IOStream& outs, uint16_t network, uint8_t device, uint8_t port, uint8_t id)
 {
   outs.print(network, 4, IOStream::hex);
   outs.print('.');
   outs.print((uint16_t) device, 2, IOStream::hex);
+  outs.print('.');
+  outs.print((uint16_t) port, 2, IOStream::hex);
   outs.print('.');
   outs.print((uint16_t) id, 2, IOStream::hex);
 }
@@ -163,7 +167,7 @@ operator<<(IOStream& outs, Domotica::HumidityTemperatureSensor::msg_t* msg)
 {
   uint8_t old_precision = outs.precision(2);
   uint8_t old_width = outs.width(-5);
-  outs << msg->humidity << PSTR(" %,")
+  outs << msg->humidity << PSTR(" %, ")
        << msg->temperature << PSTR(" C");
   outs.width(old_width);
   outs.precision(old_precision);

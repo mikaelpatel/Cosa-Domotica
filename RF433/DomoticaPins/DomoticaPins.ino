@@ -65,8 +65,8 @@ OutputPin led(Board::LED, 0);
 
 // Pin set
 enum {
-  DIGITAL_PINS = 0x00,
-  ANALOG_PINS = 0x80
+  DIGITAL_PINS,
+  ANALOG_PINS
 };
 
 void setup()
@@ -87,7 +87,7 @@ void loop()
     Domotica::DigitalPin::msg_t msg;
     Board::DigitalPin pin;
     pin = (Board::DigitalPin) pgm_read_byte(&digital_pin_map[ix]);
-    msg.set(nr, pins + ix);
+    msg.set(nr, ix);
     msg.value = InputPin::read(pin);
 
     // Next pin index or next pin set
@@ -108,7 +108,7 @@ void loop()
     Domotica::AnalogPin::msg_t msg;
     Board::AnalogPin pin;
     pin = (Board::AnalogPin) pgm_read_byte(&analog_pin_map[ix]);
-    msg.set(nr, pins + ix);
+    msg.set(nr, ix);
     msg.value = AnalogPin::sample(pin);
 
     // Next pin index or next pin set
