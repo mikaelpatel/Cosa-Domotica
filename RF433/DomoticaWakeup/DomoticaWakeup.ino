@@ -48,7 +48,7 @@
 #include <Domotica/RF433.h>
 
 // Default device address
-#define DEVICE 0x31
+#define DEVICE 0x32
 
 // RF433 includes; Virtual Wire Wireless Interface and Huffman(7,4) codec
 #include <VWI.h>
