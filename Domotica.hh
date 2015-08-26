@@ -113,9 +113,10 @@ namespace Domotica {
     DIGITAL_PIN_MSG = 1,
     ANALOG_PIN_MSG = 2,
     DIGITAL_PINS_MSG = 3,
-    TEMPERATURE_SENSOR_MSG = 4,
+    THERMOMETER_MSG = 4,
     HUMIDITY_TEMPERATURE_SENSOR_MSG = 5,
-    REALTIME_CLOCK_MSG = 6
+    REALTIME_CLOCK_MSG = 6,
+    ACCELEROMETER_MSG = 7
   };
 
   /** Message payload size (26 bytes). */
@@ -156,8 +157,8 @@ namespace Domotica {
     };
   };
 
-  /** Digital Temperature Sensor Message (8 bytes). */
-  namespace TemperatureSensor {
+  /** Digital Thermometer Message (8 bytes). */
+  namespace Thermometer {
     struct msg_t : header_t {
       float32_t temperature;     // Temperature C.
     };
@@ -175,6 +176,27 @@ namespace Domotica {
   namespace RealTimeClock {
     struct msg_t : header_t {
       clock_t time;		// Seconds since epoch.
+    };
+  };
+
+  /** Accelerometer Message (XX bytes). */
+  namespace Accelerometer {
+    enum {
+      DATA_READY = 7,		//!< Data ready interrupt enable/map/source.
+      SINGLE_TAP = 6, 		//!< Single tap.
+      DOUBLE_TAP = 5,		//!< Double tap.
+      ACT = 4,			//!< Activity.
+      INACT = 3,		//!< Inactivity.
+      FREE_FALL = 2,		//!< Free fall.
+      WATERMARK = 1,		//!< Watermark.
+      OVERRUN = 0		//!< Overrun data.
+    } __attribute__((packed));
+
+    struct msg_t : header_t {
+      uint8_t source;
+      float32_t x;
+      float32_t y;
+      float32_t z;
     };
   };
 };
@@ -228,12 +250,12 @@ IOStream& operator<<(IOStream& outs, Domotica::DigitalPins::msg_t* msg);
 IOStream& operator<<(IOStream& outs, Domotica::AnalogPin::msg_t* msg);
 
 /**
- * Print temperature sensor sample message to given output stream.
+ * Print thermometer sample message to given output stream.
  * @param[in] outs output stream.
  * @param[in] msg to print.
  * @return output stream.
  */
-IOStream& operator<<(IOStream& outs, Domotica::TemperatureSensor::msg_t* msg);
+IOStream& operator<<(IOStream& outs, Domotica::Thermometer::msg_t* msg);
 
 /**
  * Print humidity and temperature sensor sample message to given
@@ -251,4 +273,12 @@ IOStream& operator<<(IOStream& outs, Domotica::HumidityTemperatureSensor::msg_t*
  * @return output stream.
  */
 IOStream& operator<<(IOStream& outs, Domotica::RealTimeClock::msg_t* msg);
+
+/**
+ * Print accelerometer message to given output stream.
+ * @param[in] outs output stream.
+ * @param[in] msg to print.
+ * @return output stream.
+ */
+IOStream& operator<<(IOStream& outs, Domotica::Accelerometer::msg_t* msg);
 #endif

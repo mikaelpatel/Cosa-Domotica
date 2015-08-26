@@ -4,23 +4,25 @@ This Cosa library is a framework for Home Automation (Domotica) with
 cheap RF433 transmitter and receiver modules.
 
 Domotica supports the following message:
-* [Info String] (./RF433/DomoticaInfo)
+* [Accelerometer] (./RF433/DomoticaADXL345)
 * [Analog Pin] (./RF433/DomoticaAnalogPin)
 * [Digital Pin] (./RF433/DomoticaDigitalPin)
 * [Digital Pins] (./RF433/DomoticaDigitalPins)
-* [Temperature Sensor] (./RF433/DomoticaDS18B20)
 * [Humidity and Temperture Sensor] (./RF433/DomoticaDHT11)
+* [Info String] (./RF433/DomoticaInfo)
 * [Network Time Service] (./RF433/DomoticaClock)
+* [Thermometer] (./RF433/DomoticaDS18B20)
 
 The messages can be used both for peer-to-peer or broadcast communication.
 
 The demonstation sketches for monitoring messages are:
 * [LCD] (./RF433/DomoticaMonitor)
-* [Trace] (./RF433/DomoticaTrace)
+* [Serial] (./RF433/DomoticaTrace)
 
 The framework supports low power mode with power down sleep or
 awake on external interrupt.
-* [Wakeup] (./RF433/DomoticaWakeup)
+* [Button] (./RF433/DomoticaWakeup)
+* [Device Interrupt] (./RF433/DomoticaADXL345)
 
 # Install
 

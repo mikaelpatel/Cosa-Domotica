@@ -123,14 +123,17 @@ void loop()
   case Domotica::ANALOG_PIN_MSG:
     cout << (Domotica::AnalogPin::msg_t*) &msg;
     break;
-  case Domotica::TEMPERATURE_SENSOR_MSG:
-    cout << (Domotica::TemperatureSensor::msg_t*) &msg;
+  case Domotica::THERMOMETER_MSG:
+    cout << (Domotica::Thermometer::msg_t*) &msg;
     break;
   case Domotica::HUMIDITY_TEMPERATURE_SENSOR_MSG:
     cout << (Domotica::HumidityTemperatureSensor::msg_t*) &msg;
     break;
   case Domotica::REALTIME_CLOCK_MSG:
     cout << (Domotica::RealTimeClock::msg_t*) &msg;
+    break;
+  case Domotica::ACCELEROMETER_MSG:
+    cout << (Domotica::Accelerometer::msg_t*) &msg;
     break;
   default:
     ;

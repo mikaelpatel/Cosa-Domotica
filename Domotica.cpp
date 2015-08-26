@@ -152,7 +152,7 @@ operator<<(IOStream& outs, Domotica::AnalogPin::msg_t* msg)
 }
 
 IOStream&
-operator<<(IOStream& outs, Domotica::TemperatureSensor::msg_t* msg)
+operator<<(IOStream& outs, Domotica::Thermometer::msg_t* msg)
 {
   uint8_t old_precision = outs.precision(2);
   uint8_t old_width = outs.width(-5);
@@ -178,5 +178,26 @@ IOStream&
 operator<<(IOStream& outs, Domotica::RealTimeClock::msg_t* msg)
 {
   outs << time_t(msg->time);
+  return (outs);
+}
+
+IOStream&
+operator<<(IOStream& outs, Domotica::Accelerometer::msg_t* msg)
+{
+  uint8_t old_precision = outs.precision(3);
+  uint8_t old_width = outs.width(-4);
+  outs << '<' << msg->x << ',' << msg->y << ',' << msg->z << '>';
+  outs.width(old_width);
+  outs.precision(old_precision);
+  if (msg->source & _BV(Domotica::Accelerometer::FREE_FALL))
+    outs << PSTR(", free fall");
+  if (msg->source & _BV(Domotica::Accelerometer::INACT))
+    outs << PSTR(", inactivity");
+  if (msg->source & _BV(Domotica::Accelerometer::ACT))
+    outs << PSTR(", activity");
+  if (msg->source & _BV(Domotica::Accelerometer::DOUBLE_TAP))
+    outs << PSTR(", double tap");
+  if (msg->source & _BV(Domotica::Accelerometer::SINGLE_TAP))
+    outs << PSTR(", single tap");
   return (outs);
 }

@@ -103,14 +103,17 @@ void loop()
   case Domotica::ANALOG_PIN_MSG:
     trace << (Domotica::AnalogPin::msg_t*) &msg;
     break;
-  case Domotica::TEMPERATURE_SENSOR_MSG:
-    trace << (Domotica::TemperatureSensor::msg_t*) &msg;
+  case Domotica::THERMOMETER_MSG:
+    trace << (Domotica::Thermometer::msg_t*) &msg;
     break;
   case Domotica::HUMIDITY_TEMPERATURE_SENSOR_MSG:
     trace << (Domotica::HumidityTemperatureSensor::msg_t*) &msg;
     break;
   case Domotica::REALTIME_CLOCK_MSG:
     trace << (Domotica::RealTimeClock::msg_t*) &msg;
+    break;
+  case Domotica::ACCELEROMETER_MSG:
+    trace << (Domotica::Accelerometer::msg_t*) &msg;
     break;
   default:
     ;

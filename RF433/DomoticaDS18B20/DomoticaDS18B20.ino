@@ -65,7 +65,7 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Connect to one-wire device
 OWI owi(Board::D3);
-DS18B20 sensor(&owi);
+DS18B20 thermometer(&owi);
 
 // Active pullup (pullup resistor 4K7 connected between this pin
 // and OWI pin)
@@ -76,9 +76,8 @@ void setup()
   // Startup timers and wireless device
   Domotica::begin(&rf);
 
-  // Connect to temperature sensor
-  asserted(pw)
-    sensor.connect(ID);
+  // Connect to thermometer
+  asserted(pw) thermometer.connect(ID);
 }
 
 void loop()
@@ -88,18 +87,18 @@ void loop()
 
   // Make a conversion request and read the temperature (scratchpad)
   asserted(pw) {
-    sensor.convert_request();
-    sensor.read_scratchpad();
+    thermometer.convert_request();
+    thermometer.read_scratchpad();
   }
 
   // Initiate the message with measurements
-  Domotica::TemperatureSensor::msg_t msg;
+  Domotica::Thermometer::msg_t msg;
   msg.set(nr, ID);
-  msg.temperature = sensor.get_temperature() * 0.0625;
+  msg.temperature = thermometer.get_temperature() * 0.0625;
 
   // Broadcast the message and power down after completion
   rf.powerup();
-  rf.broadcast(Domotica::TEMPERATURE_SENSOR_MSG, &msg, sizeof(msg));
+  rf.broadcast(Domotica::THERMOMETER_SENSOR_MSG, &msg, sizeof(msg));
   rf.powerdown();
 
   // Deep sleep with only the watchdog awake
