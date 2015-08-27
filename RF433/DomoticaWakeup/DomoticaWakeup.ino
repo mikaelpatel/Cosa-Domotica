@@ -50,7 +50,7 @@
 // Default device address
 #define DEVICE 0x32
 
-// RF433 includes; Virtual Wire Wireless Interface and Huffman(7,4) codec
+// RF433 includes; Virtual Wire Wireless Interface and Hamming(7,4) codec
 #include <VWI.h>
 #include <HammingCodec_7_4.h>
 

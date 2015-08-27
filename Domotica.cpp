@@ -48,34 +48,26 @@ Domotica::sleep(uint16_t s)
   Watchdog::delay(16);
 }
 
-class Button : public ExternalInterrupt {
-public:
-  Button(Board::ExternalInterruptPin pin) :
-    ExternalInterrupt(pin, ON_LOW_LEVEL_MODE, true)
-  {}
-
-  virtual void on_interrupt(uint16_t arg)
-  {
-    UNUSED(arg);
-    disable();
-  }
-};
-
 void
-Domotica::await(Board::ExternalInterruptPin pin)
+Domotica::await(Board::ExternalInterruptPin pin,
+		ExternalInterrupt::InterruptMode mode)
 {
-  Button wakeup(pin);
+  InterruptPin intr(pin, mode);
 
   Power::all_disable();
-  uint8_t mode = Power::set(SLEEP_MODE_PWR_DOWN);
-  do Watchdog::delay(128); while (wakeup.is_clear());
+  uint8_t old_sleep_mode = Power::set(SLEEP_MODE_PWR_DOWN);
+  if (mode == ExternalInterrupt::ON_LOW_LEVEL_MODE)
+    do Watchdog::delay(128); while (intr.is_clear());
   Watchdog::end();
   RTC::end();
-  wakeup.enable();
 
-  while (wakeup.is_set()) yield();
+  intr.enable();
+  if (mode == ExternalInterrupt::ON_RISING_MODE)
+    while (intr.is_clear()) yield();
+  else
+    while (intr.is_set()) yield();
 
-  Power::set(mode);
+  Power::set(old_sleep_mode);
   Watchdog::begin();
   RTC::begin();
   Power::all_enable();

@@ -52,7 +52,7 @@
 // Default device address
 #define DEVICE 0x90
 
-// RF433 includes; Virtual Wire Wireless Interface and Huffman(7,4) codec
+// RF433 includes; Virtual Wire Wireless Interface and Hamming(7,4) codec
 #include <VWI.h>
 #include <HammingCodec_7_4.h>
 
@@ -60,10 +60,7 @@ HammingCodec_7_4 codec;
 VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
-#include "Cosa/RTC.hh"
 #include "Cosa/OutputPin.hh"
-#include "Cosa/Watchdog.hh"
-#include "Cosa/ExternalInterrupt.hh"
 #include <ADXL345.h>
 
 // Digital accelerometer with alternative address
@@ -71,19 +68,6 @@ ADXL345 accelerometer(1);
 
 // Flash led during transmission
 OutputPin led(Board::LED, 0);
-
-class InterruptPin : public ExternalInterrupt {
-public:
-  InterruptPin(Board::ExternalInterruptPin pin) :
-    ExternalInterrupt(pin, ON_FALLING_MODE, true)
-  {}
-
-  virtual void on_interrupt(uint16_t arg)
-  {
-    UNUSED(arg);
-    disable();
-  }
-} intr(Board::EXT0);
 
 void setup()
 {
@@ -95,18 +79,7 @@ void loop()
 {
   static uint8_t nr = 0;
 
-  Power::all_disable();
-  uint8_t mode = Power::set(SLEEP_MODE_PWR_DOWN);
-  Watchdog::end();
-  RTC::end();
-  intr.enable();
-  while (intr.is_set()) yield();
-  Power::set(mode);
-  Watchdog::begin();
-  RTC::begin();
-  Power::all_enable();
-  ::AnalogPin::powerup();
-
+  Domotica::await(Board::EXT0, ExternalInterrupt::ON_FALLING_MODE);
   uint8_t source = accelerometer.is_activity();
   if (source != 0) {
     Domotica::Accelerometer::msg_t msg;

@@ -26,6 +26,7 @@
 #include "Cosa/IOStream.hh"
 #include "Cosa/Wireless.hh"
 #include "Cosa/AnalogPin.hh"
+#include "Cosa/ExternalInterrupt.hh"
 
 /**
  * Default Domotica network identity. The full node address is
@@ -58,8 +59,10 @@ namespace Domotica {
    * Await external interrupt pin. Sleep in power down mode until the
    * pin is low.
    * @param[in] pin external interrupt pin (default EXT0).
+   * @param[in] mode level change (default ON_LOW_LEVEL_MODE).
    */
-  void await(Board::ExternalInterruptPin pin = Board::EXT0);
+  void await(Board::ExternalInterruptPin pin = Board::EXT0,
+	     ExternalInterrupt::InterruptMode mode = ExternalInterrupt::ON_LOW_LEVEL_MODE);
 
   /**
    * Print local address of sensor; DEVICE.ID.
@@ -179,9 +182,9 @@ namespace Domotica {
     };
   };
 
-  /** Accelerometer Message (XX bytes). */
+  /** Accelerometer Message (17 bytes). */
   namespace Accelerometer {
-    enum {
+    enum {		  	//!< Source
       DATA_READY = 7,		//!< Data ready interrupt enable/map/source.
       SINGLE_TAP = 6, 		//!< Single tap.
       DOUBLE_TAP = 5,		//!< Double tap.
@@ -199,6 +202,21 @@ namespace Domotica {
       float32_t z;
     };
   };
+
+  class InterruptPin : public ExternalInterrupt {
+  public:
+    InterruptPin(Board::ExternalInterruptPin pin, InterruptMode mode) :
+      ExternalInterrupt(pin, mode, true)
+    {}
+
+    virtual void on_interrupt(uint16_t arg)
+    {
+      UNUSED(arg);
+      disable();
+    }
+  };
+
+
 };
 
 /**
