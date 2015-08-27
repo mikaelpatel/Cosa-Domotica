@@ -21,6 +21,34 @@
 #ifndef COSA_DOMOTICA_RF433_HH
 #define COSA_DOMOTICA_RF433_HH
 
+/**
+ * RF433 Configuration.
+ *
+ * @section Circuit
+ * @code
+ *                         RF433/RX                       V
+ *                       +------------+                   |
+ *                       |0-----------|-------------------+
+ *                       |ANT         |       17.3 cm
+ *                       |            |
+ *                       |            |
+ *                       |            |
+ *                       |            |
+ * (VCC)---------------1-|VCC         |
+ *                     2-|DATA        |
+ * (RX/D7/D1)----------3-|DATA        |
+ * (GND)---------------4-|GND         |
+ *                       +------------+
+ *
+ *                         RF433/TX
+ *                       +------------+
+ * (TX/D6/D0)----------1-|DATA        |
+ * (VCC)---------------2-|VCC         |                    V
+ * (GND)---------------3-|GND         |                    |
+ *                       |ANT       0-|--------------------+
+ *                       +------------+       17.3 cm
+ */
+
 #ifndef SPEED
 #define SPEED 4000
 #endif

@@ -41,7 +41,7 @@
 #define ID 0x00
 #define DEST 0x01
 
-// RF433 includes; Virtual Wire Wireless Interface and Huffman(7,4) codec
+// RF433 includes; Virtual Wire Wireless Interface and Hamming(7,4) codec
 #include <VWI.h>
 #include <HammingCodec_7_4.h>
 
