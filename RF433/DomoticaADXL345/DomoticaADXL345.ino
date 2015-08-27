@@ -79,21 +79,29 @@ void loop()
 {
   static uint8_t nr = 0;
 
+  // Wait for an interrupt from the accelerometer
   Domotica::await(Board::EXT0, ExternalInterrupt::ON_FALLING_MODE);
+
+  // Check the source of the interrupt
   uint8_t source = accelerometer.is_activity();
-  if (source != 0) {
-    Domotica::Accelerometer::msg_t msg;
-    ADXL345::sample_t value;
-    msg.set(nr, 0);
-    msg.source = source;
-    accelerometer.sample(value);
-    msg.x = value.x * 0.004;
-    msg.y = value.y * 0.004;
-    msg.z = value.z * 0.004;
-    led.on();
-    rf.powerup();
-    rf.broadcast(Domotica::ACCELEROMETER_MSG, &msg, sizeof(msg));
-    rf.powerdown();
-    led.off();
-  }
+  if (UNLIKELY(source == 0)) return;
+
+  // Read the accelerometer
+  ADXL345::sample_t value;
+  accelerometer.sample(value);
+
+  // Construct a message with the source and values (+-16.000g)
+  Domotica::Accelerometer::msg_t msg;
+  msg.set(nr, 0);
+  msg.source = source;
+  msg.x = value.x * 0.004;
+  msg.y = value.y * 0.004;
+  msg.z = value.z * 0.004;
+
+  // Broadcast the message
+  led.on();
+  rf.powerup();
+  rf.broadcast(Domotica::ACCELEROMETER_MSG, &msg, sizeof(msg));
+  rf.powerdown();
+  led.off();
 }
