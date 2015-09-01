@@ -96,6 +96,47 @@ Domotica::print(IOStream& outs, uint16_t network, uint8_t device, uint8_t port, 
   outs.print((uint16_t) id, 2, IOStream::hex);
 }
 
+void
+Domotica::print(IOStream& outs, uint8_t port, Domotica::msg_t* msg)
+{
+  switch (port) {
+  case Domotica::INFO_STRING_MSG:
+    outs << (Domotica::InfoString::msg_t*) msg;
+    break;
+  case Domotica::DIGITAL_PIN_MSG:
+    outs << (Domotica::DigitalPin::msg_t*) msg;
+    break;
+  case Domotica::DIGITAL_PINS_MSG:
+    outs << (Domotica::DigitalPins::msg_t*) msg;
+    break;
+  case Domotica::ANALOG_PIN_MSG:
+    outs << (Domotica::AnalogPin::msg_t*) msg;
+    break;
+  case Domotica::THERMOMETER_MSG:
+    outs << (Domotica::Thermometer::msg_t*) msg;
+    break;
+  case Domotica::HUMIDITY_TEMPERATURE_SENSOR_MSG:
+    outs << (Domotica::HumidityTemperatureSensor::msg_t*) msg;
+    break;
+  case Domotica::REALTIME_CLOCK_MSG:
+    outs << (Domotica::RealTimeClock::msg_t*) msg;
+    break;
+  case Domotica::ACCELEROMETER_MSG:
+    outs << (Domotica::Accelerometer::msg_t*) msg;
+    break;
+  default:
+    outs.print((uint32_t) msg, msg, sizeof(Domotica::msg_t), IOStream::hex);
+  }
+}
+
+void
+Domotica::print(IOStream& outs, uint8_t src, uint8_t port, Domotica::msg_t* msg)
+{
+  Domotica::print(outs, src, port, msg->id);
+  outs << ':';
+  Domotica::print(outs, port, msg);
+}
+
 IOStream&
 operator<<(IOStream& outs, Domotica::header_t* header)
 {

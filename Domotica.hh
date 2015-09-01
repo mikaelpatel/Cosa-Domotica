@@ -130,6 +130,23 @@ namespace Domotica {
     uint8_t payload[PAYLOAD_MAX];
   };
 
+  /**
+   * Print message from given port.
+   * @param[in] outs output stream.
+   * @param[in] port sensor type.
+   * @param[in] msg message.
+   */
+  void print(IOStream& outs, uint8_t port, msg_t* msg);
+
+  /**
+   * Print message from given source sensor address prefix.
+   * @param[in] outs output stream.
+   * @param[in] src source device.
+   * @param[in] port sensor type.
+   * @param[in] msg message.
+   */
+  void print(IOStream& outs, uint8_t src, uint8_t port, Domotica::msg_t* msg);
+
   /** Information String Message (26 bytes max). */
   namespace InfoString {
     static const size_t MAX = PAYLOAD_MAX;
