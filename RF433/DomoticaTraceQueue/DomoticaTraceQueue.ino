@@ -1,5 +1,5 @@
 /**
- * @file DomoticaMonitor.ino
+ * @file DomoticaTraceQueue.ino
  * @version 1.0
  *
  * @section License
@@ -16,8 +16,9 @@
  * Lesser General Public License for more details.
  *
  * @section Description
- * Domotica demonstration sketch; Recieve messages and print to LCD.
- *
+ * Domotica demonstration sketch; Recieve messages, queue and print
+ * periodically.
+
  * @section Circuit
  * @code
  *                         RF433/RX                       V
@@ -42,7 +43,7 @@
 #include <Domotica/RF433.h>
 
 // Default device address
-#define DEVICE 0x02
+#define DEVICE 0x01
 
 // RF433 includes; Virtual Wire Wireless Interface and Hamming(7,4) codec
 #include <VWI.h>
@@ -52,59 +53,66 @@ HammingCodec_7_4 codec;
 VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
-#include "Cosa/Time.hh"
-#include "Cosa/IOStream.hh"
+#include "Cosa/RTC.hh"
+#include "Cosa/Trace.hh"
+#include "Cosa/IOStream/Driver/UART.hh"
+#include "Cosa/Periodic.hh"
+#include "Cosa/Queue.hh"
 
-// Select port type to use with the LCD device driver.
-// LCD and communication port
-#include <HD44780.h>
+// Sensor data
+struct sensor_t {
+  uint8_t src;
+  uint8_t port;
+  Domotica::msg_t msg;
+  uint32_t timestamp;
 
-// HD44780 driver built-in adapters
-// HD44780::Port4b port;
-// HD44780::SR3W port;
-// HD44780::SR3WSPI port;
-// HD44780::SR4W port;
+  sensor_t(uint8_t src, uint8_t port, Domotica::msg_t& msg)
+  {
+    this->src = src;
+    this->port = port;
+    this->msg = msg;
+    this->timestamp = RTC::seconds();
+  }
+  sensor_t() {}
+};
 
-// PCF8574 I2C expander io port based adapters
-#include <PCF8574.h>
-// #include <MJKDZ_LCD_Module.h>
-// MJKDZ_LCD_Module port;
-// MJKDZ_LCD_Module port(0);
-// #include <GY_IICLCD.h>
-// GY_IICLCD port;
-#include <DFRobot_IIC_LCD_Module.h>
-DFRobot_IIC_LCD_Module port;
-// #include <SainSmart_LCD2004.h>
-// SainSmart_LCD2004 port;
-
-// MCP23008 I2C expander io port based adapters
-// #include <MCP23008.h>
-// #include <Adafruit_I2C_LCD_Backpack.h>
-// Adafruit_I2C_LCD_Backpack port;
-
-// HD44780 lcd(&port, 20, 4);
-// HD44780 lcd(&port, 16, 4);
-HD44780 lcd(&port);
-IOStream cout(&lcd);
+const int SENSOR_MAX = 8;
+Queue<sensor_t, SENSOR_MAX> queue;
 
 void setup()
 {
   Domotica::begin(&rf);
-  time_t::epoch_year(2015);
-  lcd.begin();
-  cout << PSTR("DomoticaMonitor: started");
+  uart.begin(57600);
+  trace.begin(&uart, PSTR("DomoticaTraceQueue: started"));
   rf.powerup();
 }
 
 void loop()
 {
-  const uint32_t TIMEOUT = 10000L;
+  // Receive message from sensor and queue
+  const uint32_t TIMEOUT = 1000L;
   Domotica::msg_t msg;
   uint8_t src;
   uint8_t port;
+  int res = rf.recv(src, port, &msg, sizeof(msg), TIMEOUT);
+  if (res > 0) {
+    sensor_t sensor(src, port, msg);
+    if (!queue.enqueue(&sensor)) {
+      trace << PSTR("warning: queue full") << endl;
+    }
+  }
 
-  while (rf.recv(src, port, &msg, sizeof(msg), TIMEOUT) < 0);
-  cout << clear;
-  if (msg.battery < 3500) cout << '*';
-  Domotica::print(cout, src, port, &msg);
+  // Periodically print the queued sensor messages
+  periodic(10000) {
+    sensor_t sensor;
+    while (queue.dequeue(&sensor)) {
+      trace << time_t(sensor.timestamp) << PSTR(":sensor=");
+      Domotica::print(trace, sensor.src, sensor.port, sensor.msg.id);
+      trace << PSTR(",nr=") << sensor.msg.nr
+	    << PSTR(",vcc=") << sensor.msg.battery
+	    << PSTR(":");
+      Domotica::print(trace, sensor.port, &sensor.msg);
+      trace << endl;
+    }
+  }
 }

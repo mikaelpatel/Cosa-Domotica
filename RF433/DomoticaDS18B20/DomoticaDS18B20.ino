@@ -98,7 +98,7 @@ void loop()
 
   // Broadcast the message and power down after completion
   rf.powerup();
-  rf.broadcast(Domotica::THERMOMETER_SENSOR_MSG, &msg, sizeof(msg));
+  rf.broadcast(Domotica::THERMOMETER_MSG, &msg, sizeof(msg));
   rf.powerdown();
 
   // Deep sleep with only the watchdog awake

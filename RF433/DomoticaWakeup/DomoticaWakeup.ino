@@ -17,7 +17,7 @@
  *
  * @section Description
  * Domotica demonstation sketch; Wake up on button and send
- * message.
+ * message with analog pin sample.
  *
  * @section Circuit
  * @code
@@ -62,7 +62,7 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 #include "Cosa/AnalogPin.hh"
 
 // Flash led on transmission
-OutputPin led(Board::LED, 0);
+OutputPin led(Board::LED);
 
 void setup()
 {
@@ -86,9 +86,11 @@ void loop()
   msg.set(nr, ix);
   msg.value = AnalogPin::sample(pin);
 
+#if defined(CYCLE_ANALOG_PINS)
   // Next pin index
   ix = (ix + 1);
   if (ix == membersof(analog_pin_map)) ix = 0;
+#endif
 
   // Boardcast message
   led.on();
