@@ -53,11 +53,15 @@ HammingCodec_7_4 codec;
 VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
+#include "Cosa/Clock.hh"
 #include "Cosa/RTC.hh"
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
 #include "Cosa/Periodic.hh"
 #include "Cosa/Queue.hh"
+
+// Wall-clock
+Clock clock;
 
 // Sensor data
 struct sensor_t {
@@ -71,7 +75,7 @@ struct sensor_t {
     this->src = src;
     this->port = port;
     this->msg = msg;
-    this->timestamp = RTC::seconds();
+    this->timestamp = clock.time();
   }
   sensor_t() {}
 };
@@ -82,6 +86,7 @@ Queue<sensor_t, SENSOR_MAX> queue;
 void setup()
 {
   Domotica::begin(&rf);
+  RTC::wall(&clock);
   uart.begin(57600);
   trace.begin(&uart, PSTR("DomoticaTraceQueue: started"));
   rf.powerup();
@@ -103,7 +108,7 @@ void loop()
   }
 
   // Periodically print the queued sensor messages
-  periodic(10000) {
+  periodic(timer, 10000) {
     sensor_t sensor;
     while (queue.dequeue(&sensor)) {
       trace << time_t(sensor.timestamp) << PSTR(":sensor=");

@@ -54,10 +54,14 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
 #include "Cosa/RTC.hh"
+#include "Cosa/Clock.hh"
 #include "Cosa/Time.hh"
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
 #include "Cosa/Periodic.hh"
+
+// Wall-clock
+Clock clock;
 
 namespace Sensor {
 
@@ -99,12 +103,12 @@ Sensor::Table<NMEMB>::update(uint8_t src, uint8_t port, Domotica::msg_t& msg)
 	&& m_sensor[i].port == port
 	&& m_sensor[i].msg.id == msg.id)
       {
-	m_sensor[i].timestamp = RTC::seconds();
+	m_sensor[i].timestamp = clock.time();
 	m_sensor[i].msg = msg;
 	return (true);
       }
     if (m_sensor[i].src == 0) {
-      m_sensor[i].timestamp = RTC::seconds();
+      m_sensor[i].timestamp = clock.time();
       m_sensor[i].src = src;
       m_sensor[i].port = port;
       m_sensor[i].msg = msg;
@@ -118,7 +122,7 @@ template<size_t NMEMB>
 void
 Sensor::Table<NMEMB>::print(IOStream& outs)
 {
-  uint32_t now = RTC::seconds();
+  uint32_t now = clock.time();
   outs << time_t(now) << endl;
   for (int i = 0; i < NMEMB; i++) {
     if (m_sensor[i].src == 0) break;
@@ -144,6 +148,7 @@ Sensor::Table<TABLE_MAX> table;
 void setup()
 {
   Domotica::begin(&rf);
+  RTC::wall(&clock);
   time_t::epoch_year(2015);
   uart.begin(57600);
   trace.begin(&uart, PSTR("DomoticaTraceTable: started"));
@@ -163,5 +168,5 @@ void loop()
     }
   }
 
-  periodic(10000) table.print(trace);
+  periodic(timer, 10000) table.print(trace);
 }
