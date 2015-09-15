@@ -48,12 +48,11 @@ HammingCodec_7_4 codec;
 VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
-#include "Cosa/Clock.hh"
 #include "Cosa/RTC.hh"
 #include "Cosa/OutputPin.hh"
 
 // Wall-clock
-Clock clock;
+RTC::Clock clock;
 
 // Flash led during transmission
 OutputPin led(Board::LED, 0);
@@ -62,7 +61,6 @@ void setup()
 {
   // Start timers and wireless driver
   Domotica::begin(&rf);
-  RTC::wall(&clock);
 }
 
 void loop()

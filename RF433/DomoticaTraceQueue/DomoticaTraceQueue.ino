@@ -53,7 +53,6 @@ HammingCodec_7_4 codec;
 VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
-#include "Cosa/Clock.hh"
 #include "Cosa/RTC.hh"
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
@@ -61,7 +60,7 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 #include "Cosa/Queue.hh"
 
 // Wall-clock
-Clock clock;
+RTC::Clock clock;
 
 // Sensor data
 struct sensor_t {
@@ -86,7 +85,6 @@ Queue<sensor_t, SENSOR_MAX> queue;
 void setup()
 {
   Domotica::begin(&rf);
-  RTC::wall(&clock);
   uart.begin(57600);
   trace.begin(&uart, PSTR("DomoticaTraceQueue: started"));
   rf.powerup();

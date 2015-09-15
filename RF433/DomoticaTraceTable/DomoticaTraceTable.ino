@@ -54,14 +54,13 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 
 // Sketch includes
 #include "Cosa/RTC.hh"
-#include "Cosa/Clock.hh"
 #include "Cosa/Time.hh"
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
 #include "Cosa/Periodic.hh"
 
 // Wall-clock
-Clock clock;
+RTC::Clock clock;
 
 namespace Sensor {
 
@@ -148,7 +147,6 @@ Sensor::Table<TABLE_MAX> table;
 void setup()
 {
   Domotica::begin(&rf);
-  RTC::wall(&clock);
   time_t::epoch_year(2015);
   uart.begin(57600);
   trace.begin(&uart, PSTR("DomoticaTraceTable: started"));
