@@ -50,7 +50,8 @@
 #include <HammingCodec_7_4.h>
 
 HammingCodec_7_4 codec;
-VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
+VWI::Receiver rx(RX, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, &rx);
 
 // Sketch includes
 #include "Cosa/RTC.hh"
@@ -141,7 +142,7 @@ Sensor::Table<NMEMB>::print(IOStream& outs)
   outs << endl;
 }
 
-const int TABLE_MAX = 8;
+const int TABLE_MAX = 32;
 Sensor::Table<TABLE_MAX> table;
 
 void setup()

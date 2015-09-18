@@ -32,7 +32,9 @@
 #include <HammingCodec_7_4.h>
 
 HammingCodec_7_4 codec;
-VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
+VWI::Receiver rx(RX, &codec);
+VWI::Transmitter tx(RX, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, &rx, &tx);
 
 // Sketch includes
 #include "Cosa/RTC.hh"

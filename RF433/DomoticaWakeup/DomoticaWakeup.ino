@@ -55,7 +55,8 @@
 #include <HammingCodec_7_4.h>
 
 HammingCodec_7_4 codec;
-VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
+VWI::Transmitter tx(TX, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, &tx);
 
 // Sketch includes
 #include "Cosa/OutputPin.hh"

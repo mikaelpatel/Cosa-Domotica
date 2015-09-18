@@ -53,17 +53,12 @@
 #include <HammingCodec_7_4.h>
 
 HammingCodec_7_4 codec;
-VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
+VWI::Transmitter tx(TX, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, &tx);
 
 // Sketch includes
 #include "Cosa/OutputPin.hh"
 #include <DHT.h>
-
-// #include "Cosa/RTC.hh"
-// #include "Cosa/Watchdog.hh"
-// #include "Cosa/Trace.hh"
-// #include "Cosa/IOStream/Driver/UART.hh"
-// Soft::UAT uart(Board::D1);
 
 // DHT pin configuration
 #define EXT Board::EXT0
@@ -76,13 +71,6 @@ OutputPin led(Board::LED);
 
 void setup()
 {
-  // Start trace output stream on the serial port
-  // uart.begin(9600);
-  // trace.begin(&uart, PSTR("CosaDHT: started"));
-
-  // Watchdog::begin();
-  // RTC::begin();
-
   // Start timers and wireless driver
   Domotica::begin(&rf);
 }
@@ -97,13 +85,6 @@ void loop()
   msg.set(nr, ID);
   int16_t humidity;
   int16_t temperature;
-
-  // trace << PSTR("sensor: ");
-  // if (sensor.sample())
-  // trace << sensor;
-  // else
-  // trace << PSTR("failed");
-  // trace << endl;
 
   sensor.sample(humidity, temperature);
   msg.humidity = humidity / 10.0;

@@ -50,7 +50,8 @@
 #include <HammingCodec_7_4.h>
 
 HammingCodec_7_4 codec;
-VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
+VWI::Receiver rx(RX, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, &rx);
 
 // Sketch includes
 #include "Cosa/RTC.hh"

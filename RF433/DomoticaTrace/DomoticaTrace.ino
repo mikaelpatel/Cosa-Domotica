@@ -49,7 +49,8 @@
 #include <HammingCodec_7_4.h>
 
 HammingCodec_7_4 codec;
-VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
+VWI::Receiver rx(RX, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, &rx);
 
 // Sketch includes
 #include "Cosa/RTC.hh"
@@ -58,15 +59,15 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 #include "Cosa/IOStream/Driver/UART.hh"
 #include "Cosa/InputPin.hh"
 
-// Receiver snooping
-InputPin rx(RX);
+// Wall-clock
+RTC::Clock clock;
 
 void setup()
 {
   Domotica::begin(&rf);
+  time_t::epoch_year(2015);
   uart.begin(9600);
   trace.begin(&uart, PSTR("DomoticaTrace: started"));
-  time_t::epoch_year(2015);
   rf.powerup();
 }
 
@@ -78,48 +79,15 @@ void loop()
   uint8_t port;
   int res = rf.recv(src, port, &msg, sizeof(msg), TIMEOUT);
   if (res < 0) return;
-
-  trace << RTC::millis() << PSTR(":") << rf.get_link_quality_indicator()
-	<< PSTR(":src=") << hex << src
-	<< PSTR(",port=") << hex << port
-	<< PSTR(",dest=")
-	<< hex << (rf.is_broadcast() ? 0 : rf.get_device_address())
-	<< PSTR(",id=") << msg.id
-	<< PSTR(",nr=") << msg.nr
+  int rssi = rf.get_link_quality_indicator();
+  uint32_t now = clock.time();
+  trace << time_t(now) << PSTR(":sensor=");
+  Domotica::print(trace, src, port, msg.id);
+  trace << PSTR(",nr=") << msg.nr
 	<< PSTR(",vcc=") << msg.battery
+	<< PSTR(",rssi=") << rssi
 	<< PSTR(",len=") << res
 	<< PSTR(":");
-
-  switch (port) {
-  case Domotica::INFO_STRING_MSG:
-    trace << (Domotica::InfoString::msg_t*) &msg;
-    break;
-  case Domotica::DIGITAL_PIN_MSG:
-    trace << (Domotica::DigitalPin::msg_t*) &msg;
-    break;
-  case Domotica::DIGITAL_PINS_MSG:
-    trace << (Domotica::DigitalPins::msg_t*) &msg;
-    break;
-  case Domotica::ANALOG_PIN_MSG:
-    trace << (Domotica::AnalogPin::msg_t*) &msg;
-    break;
-  case Domotica::THERMOMETER_MSG:
-    trace << (Domotica::Thermometer::msg_t*) &msg;
-    break;
-  case Domotica::HUMIDITY_TEMPERATURE_SENSOR_MSG:
-    trace << (Domotica::HumidityTemperatureSensor::msg_t*) &msg;
-    break;
-  case Domotica::REALTIME_CLOCK_MSG:
-    trace << (Domotica::RealTimeClock::msg_t*) &msg;
-    break;
-  case Domotica::ACCELEROMETER_MSG:
-    trace << (Domotica::Accelerometer::msg_t*) &msg;
-    break;
-  default:
-    ;
-  }
+  Domotica::print(trace, port, &msg);
   trace << endl;
-#if defined(VERBOSE)
-  trace.print((uint32_t) &msg, &msg, res, IOStream::hex);
-#endif
 }

@@ -56,7 +56,8 @@
 #include <HammingCodec_7_4.h>
 
 HammingCodec_7_4 codec;
-VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
+VWI::Transmitter tx(TX, &codec);
+VWI rf(NETWORK, DEVICE, SPEED, &tx);
 
 // Sketch includes
 #include "Cosa/OutputPin.hh"
@@ -65,15 +66,12 @@ VWI rf(NETWORK, DEVICE, SPEED, RX, TX, &codec);
 #include <DS18B20.h>
 
 // Connect to one-wire device
-// OWI owi(Board::D3);
-OWI owi(Board::D2);
+OWI owi(Board::D3);
 DS18B20 thermometer(&owi);
 
 // Active pullup (pullup resistor 4K7 connected between this pin
 // and OWI pin)
-// OutputPin pw(Board::D4);
-#undef asserted
-#define asserted(x)
+OutputPin pw(Board::D4);
 
 void setup()
 {
