@@ -20,7 +20,7 @@
 
 #include "Domotica.hh"
 
-#include "Cosa/RTC.hh"
+#include "Cosa/RTT.hh"
 #include "Cosa/Power.hh"
 #include "Cosa/Watchdog.hh"
 #include "Cosa/AnalogPin.hh"
@@ -30,7 +30,7 @@ bool
 Domotica::begin(Wireless::Driver* rf, void* config)
 {
   Watchdog::begin();
-  RTC::begin();
+  RTT::begin();
   if (UNLIKELY(!rf->begin(config))) return (false);
   rf->powerdown();
   return (true);
@@ -59,7 +59,7 @@ Domotica::await(Board::ExternalInterruptPin pin,
   if (mode == ExternalInterrupt::ON_LOW_LEVEL_MODE)
     do Watchdog::delay(128); while (intr.is_clear());
   Watchdog::end();
-  RTC::end();
+  RTT::end();
 
   intr.enable();
   if (mode == ExternalInterrupt::ON_RISING_MODE)
@@ -69,7 +69,7 @@ Domotica::await(Board::ExternalInterruptPin pin,
 
   Power::set(old_sleep_mode);
   Watchdog::begin();
-  RTC::begin();
+  RTT::begin();
   Power::all_enable();
   ::AnalogPin::powerup();
 }

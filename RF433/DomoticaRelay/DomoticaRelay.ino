@@ -37,7 +37,7 @@ VWI::Transmitter tx(RX, &codec);
 VWI rf(NETWORK, DEVICE, SPEED, &rx, &tx);
 
 // Sketch includes
-#include "Cosa/RTC.hh"
+#include "Cosa/RTT.hh"
 #include "Cosa/Power.hh"
 #include "Cosa/Watchdog.hh"
 
@@ -55,7 +55,7 @@ void setup()
   trace.begin(&uart, PSTR("DomoticaRelay: started"));
 #endif
   Watchdog::begin();
-  RTC::begin();
+  RTT::begin();
   ASSERT(rf.begin());
 }
 
@@ -75,7 +75,7 @@ void loop()
   if (!rf.is_broadcast()) return;
 
 #if !defined(BOARD_ATTINY)
-  trace << RTC::millis()
+  trace << RTT::millis()
 	<< PSTR(":src=") << hex << src
 	<< PSTR(",port=") << hex << port
 	<< PSTR(",dest=") << rf.device_address()

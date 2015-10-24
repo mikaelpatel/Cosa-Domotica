@@ -54,14 +54,14 @@ VWI::Receiver rx(RX, &codec);
 VWI rf(NETWORK, DEVICE, SPEED, &rx);
 
 // Sketch includes
-#include "Cosa/RTC.hh"
+#include "Cosa/RTT.hh"
 #include "Cosa/Time.hh"
 #include "Cosa/Trace.hh"
 #include "Cosa/IOStream/Driver/UART.hh"
 #include "Cosa/Periodic.hh"
 
 // Wall-clock
-RTC::Clock clock;
+RTT::Clock clock;
 
 namespace Sensor {
 

@@ -49,11 +49,11 @@ VWI::Transmitter tx(TX, &codec);
 VWI rf(NETWORK, DEVICE, SPEED, &tx);
 
 // Sketch includes
-#include "Cosa/RTC.hh"
+#include "Cosa/RTT.hh"
 #include "Cosa/OutputPin.hh"
 
 // Wall-clock
-RTC::Clock clock;
+RTT::Clock clock;
 
 // Flash led during transmission
 OutputPin led(Board::LED, 0);
