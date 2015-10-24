@@ -78,7 +78,7 @@ void loop()
   trace << RTC::millis()
 	<< PSTR(":src=") << hex << src
 	<< PSTR(",port=") << hex << port
-	<< PSTR(",dest=") << rf.get_device_address()
+	<< PSTR(",dest=") << rf.device_address()
 	<< endl;
 #endif
   count = rf.send(DEST, port, &msg, count);

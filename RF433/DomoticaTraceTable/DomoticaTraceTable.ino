@@ -98,7 +98,7 @@ template<size_t NMEMB>
 bool
 Sensor::Table<NMEMB>::update(uint8_t src, uint8_t port, Domotica::msg_t& msg)
 {
-  for (int i = 0; i < NMEMB; i++) {
+  for (uint16_t i = 0; i < NMEMB; i++) {
     if (m_sensor[i].src == src
 	&& m_sensor[i].port == port
 	&& m_sensor[i].msg.id == msg.id)
@@ -124,7 +124,7 @@ Sensor::Table<NMEMB>::print(IOStream& outs)
 {
   uint32_t now = clock.time();
   outs << time_t(now) << endl;
-  for (int i = 0; i < NMEMB; i++) {
+  for (uint16_t i = 0; i < NMEMB; i++) {
     if (m_sensor[i].src == 0) break;
     uint8_t src = m_sensor[i].src;
     uint8_t port = m_sensor[i].port;
