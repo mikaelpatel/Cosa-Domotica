@@ -56,7 +56,7 @@ VWI rf(NETWORK, DEVICE, SPEED, &rx);
 #include "Cosa/RTT.hh"
 #include "Cosa/Time.hh"
 #include "Cosa/Trace.hh"
-#include "Cosa/IOStream/Driver/UART.hh"
+#include "Cosa/UART.hh"
 #include "Cosa/InputPin.hh"
 
 // Wall-clock

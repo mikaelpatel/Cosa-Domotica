@@ -43,7 +43,7 @@ VWI rf(NETWORK, DEVICE, SPEED, &rx, &tx);
 
 #if !defined(BOARD_ATTINY)
 #include "Cosa/Trace.hh"
-#include "Cosa/IOStream/Driver/UART.hh"
+#include "Cosa/UART.hh"
 #else
 #define ASSERT(x)
 #endif

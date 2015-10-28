@@ -56,7 +56,7 @@ VWI rf(NETWORK, DEVICE, SPEED, &rx);
 // Sketch includes
 #include "Cosa/RTT.hh"
 #include "Cosa/Trace.hh"
-#include "Cosa/IOStream/Driver/UART.hh"
+#include "Cosa/UART.hh"
 #include "Cosa/Periodic.hh"
 #include "Cosa/Queue.hh"
 
