@@ -79,7 +79,7 @@ void loop()
   uint8_t port;
   int res = rf.recv(src, port, &msg, sizeof(msg), TIMEOUT);
   if (res < 0) return;
-  int rssi = rf.get_link_quality_indicator();
+  int rssi = rf.link_quality_indicator();
   uint32_t now = clock.time();
   trace << time_t(now) << PSTR(":sensor=");
   Domotica::print(trace, src, port, msg.id);

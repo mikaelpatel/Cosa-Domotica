@@ -96,7 +96,7 @@ void loop()
   // Initiate the message with measurements
   Domotica::Thermometer::msg_t msg;
   msg.set(nr, ID);
-  msg.temperature = thermometer.get_temperature() * 0.0625;
+  msg.temperature = thermometer.temperature() * 0.0625;
 
   // Broadcast the message and power down after completion
   rf.powerup();
